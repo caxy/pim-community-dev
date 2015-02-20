@@ -1391,11 +1391,12 @@ class FixturesContext extends RawMinkContext
 
     /**
      * @param string $username
-     * @param string $groupname
+     * @param string $searchedLabel
+     * @param string $associationType Can be 'group' or 'role'
      *
      * @return User
      *
-     * @Then /^the user "([^"]+)" should be in the "(?P<groupname>[^"]+)" (group)$/
+     * @Then /^the user "([^"]+)" should be in the "([^"]+)" (group)$/
      * @Then /^the user "([^"]+)" should have the "([^"]+)" (role)$/
      */
     public function checkUserAssociationExists($username, $searchedLabel = null, $associationType = null)
@@ -1403,10 +1404,10 @@ class FixturesContext extends RawMinkContext
         /** @var User $userEntity */
         $userEntity = $this->getEntityOrException('User', ['username' => $username]);
         if ($searchedLabel && $associationType == 'group' && !$userEntity->hasGroup($searchedLabel)) {
-            throw new \InvalidArgumentException("The user $username does not belong to the '$searchedLabel' group");
+            throw new \InvalidArgumentException(sprintf("The user %s does not belong to the '%s' group", $username, $searchedLabel));
         }
         if ($searchedLabel && $associationType == 'role' && !$userEntity->hasRole($searchedLabel)) {
-            throw new \InvalidArgumentException("The user $username does not have the '$searchedLabel' role");
+            throw new \InvalidArgumentException(sprintf("The user %s does not have the '%s' role", $username, $searchedLabel));
         }
         return $userEntity;
     }
@@ -1414,10 +1415,11 @@ class FixturesContext extends RawMinkContext
     /**
      * @param string $username
      * @param string $groupname
+     * @param string $associationType Can be 'group' or 'role'
      *
      * @return User
      *
-     * @Then /^the user "([^"]+)" should not be in the "(?P<groupname>[^"]+)" (group)$/
+     * @Then /^the user "([^"]+)" should not be in the "([^"]+)" (group)$/
      * @Then /^the user "([^"]+)" should not have the "([^"]+)" (role)$/
      */
     public function checkUserAssociationDoNotExist($username, $searchedLabel = null, $associationType = null)

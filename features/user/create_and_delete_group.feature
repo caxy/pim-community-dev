@@ -43,7 +43,7 @@ Feature: Create a group
     Then I should see "This value should not be blank."
 
   @javascript
-  Scenario: delete created groups for database integrity
+  Scenario: Delete created groups for database integrity
     Given I am on the user groups page
     When I click on the "Delete" action of the row which contains "DummyGroup1"
     Then I should see "Delete Confirmation"
@@ -56,7 +56,7 @@ Feature: Create a group
     Then there should be a "Redactor" user group
     When I click on the "Delete" action of the row which contains "Redactor"
     Then I should see a confirm dialog with the following content:
-      | title   | Delete Confirmation                             |
+      | title   | Delete Confirmation                         |
       | content | Are you sure you want to delete this group? |
     When I cancel the deletion
     Then there should be a "Redactor" user group
