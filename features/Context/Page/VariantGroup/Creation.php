@@ -13,4 +13,8 @@ use Context\Page\ProductGroup\Creation as GroupCreation;
  */
 class Creation extends GroupCreation
 {
+    /**
+     * @var string
+     */
+    protected $path = '/enrich/variant-group/create';
 }

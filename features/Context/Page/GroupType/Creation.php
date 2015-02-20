@@ -13,4 +13,8 @@ use Context\Page\Base\Form;
  */
 class Creation extends Form
 {
+    /**
+     * @var string
+     */
+    protected $path = '/configuration/group-type/create';
 }

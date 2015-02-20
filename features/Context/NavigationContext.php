@@ -7,6 +7,7 @@ use Behat\Behat\Context\Step;
 use Behat\Behat\Event\BaseScenarioEvent;
 use Behat\Behat\Event\StepEvent;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Context\Page\Base\Form;
 use Oro\Bundle\UserBundle\Entity\Role;
 use Pim\Bundle\CatalogBundle\Entity\Category;
 use Pim\Bundle\CatalogBundle\Entity\Family;
@@ -15,8 +16,11 @@ use Pim\Bundle\CatalogBundle\Model\AttributeGroupInterface;
 use Pim\Bundle\CatalogBundle\Model\GroupInterface;
 use Pim\Bundle\CatalogBundle\Model\GroupTypeInterface;
 use Pim\Bundle\CatalogBundle\Model\Product;
+use Pim\Bundle\TransformBundle\Normalizer\MongoDB\VersionNormalizer;
+use Pim\Bundle\VersioningBundle\Model\VersionableInterface;
 use SensioLabs\Behat\PageObjectExtension\Context\PageFactory;
 use SensioLabs\Behat\PageObjectExtension\Context\PageObjectAwareInterface;
+use SensioLabs\Behat\PageObjectExtension\PageObject\Page;
 
 /**
  * Context for navigating the website
@@ -140,7 +144,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
      * @param string $not
      * @param string $page
      *
-     * @return null|Then
+     * @return null|Step\Then
      * @Given /^I should( not)? be able to access the ([^"]*) page$/
      */
     public function iShouldNotBeAbleToAccessThePage($not, $page)
@@ -163,9 +167,11 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
      * @param string $identifier
      * @param string $page
      *
-     * @return null|Then
+     * @return null|Step\Then
      * @Given /^I should( not)? be able to (\w+) the "([^"]*)" (\w+)$/
      * @Given /^I should( not)? be able to access the (\w+) "([^"]*)" (\w+) page$/
+     *
+     * @throws \Exception
      */
     public function iShouldNotBeAbleToAccessTheEntityEditPage($not, $action, $identifier, $page)
     {
@@ -187,6 +193,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
 
         $page = ucfirst($page);
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
 
         $this->currentPage = sprintf('%s %s', $page, $action);
@@ -206,6 +213,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = ucfirst($page);
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -232,6 +240,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = 'UserRole';
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($label);
         $this->openPage(sprintf('UserRole edit', $page), array('id' => $entity->getId()));
     }
@@ -247,6 +256,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = ucfirst($page);
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s show', $page), array('id' => $entity->getId()));
     }
@@ -261,6 +271,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = 'AttributeGroup';
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -274,6 +285,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = 'AssociationType';
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -366,6 +378,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = 'ProductGroup';
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -379,6 +392,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     public function iAmOnTheVariantGroupEditPage($identifier)
     {
         $page = 'VariantGroup';
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->getProductGroup($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -393,6 +407,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = 'GroupType';
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -406,6 +421,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     {
         $page = 'AssociationType';
         $getter = sprintf('get%s', $page);
+        /** @var VersionableInterface $entity */
         $entity = $this->getFixturesContext()->$getter($identifier);
         $this->openPage(sprintf('%s edit', $page), array('id' => $entity->getId()));
     }
@@ -637,7 +653,7 @@ class NavigationContext extends RawMinkContext implements PageObjectAwareInterfa
     }
 
     /**
-     * @return Page
+     * @return Form
      */
     public function getCurrentPage()
     {
