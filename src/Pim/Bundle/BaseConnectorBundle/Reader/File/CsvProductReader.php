@@ -129,7 +129,9 @@ class CsvProductReader extends CsvReader
             $pos = strpos($code, '-');
             $attributeCode = false !== $pos ? substr($code, 0, $pos) : $code;
 
-            if (in_array($attributeCode, $this->mediaAttributes)) {
+            if (in_array($attributeCode, $this->mediaAttributes) &&
+                '' !== $data[$code]
+            ) {
                 $data[$code] = dirname($this->filePath) . '/' . $value;
             }
         }
