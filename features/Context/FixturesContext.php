@@ -1406,7 +1406,6 @@ class FixturesContext extends RawMinkContext
             throw new \InvalidArgumentException("The user $username does not belong to the '$searchedLabel' group");
         }
         if ($searchedLabel && $associationType == 'role' && !$userEntity->hasRole($searchedLabel)) {
-            var_dump($searchedLabel);
             throw new \InvalidArgumentException("The user $username does not have the '$searchedLabel' role");
         }
         return $userEntity;
