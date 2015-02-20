@@ -2,6 +2,7 @@
 
 namespace Context\Loader;
 
+use Oro\Bundle\OrganizationBundle\Entity\BusinessUnit;
 use Oro\Bundle\UserBundle\Entity\Group;
 use Symfony\Component\Yaml\Yaml;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -24,6 +25,9 @@ class UserLoader extends LoadUserData
      */
     protected $filePath;
 
+    /** @var BusinessUnit */
+    protected $mainOwner = [];
+
     /**
      * {@inheritdoc}
      */
@@ -34,6 +38,7 @@ class UserLoader extends LoadUserData
         $configuration = Yaml::parse(realpath($this->getFilePath()));
 
         if (isset($configuration['users'])) {
+            $this->loadMainOwner();
             foreach ($configuration['users'] as $username => $data) {
                 $this->createUser($username, $data);
             }
@@ -123,8 +128,18 @@ class UserLoader extends LoadUserData
     {
         $role = $this->getRole($code);
 
+        $labels = [
+            'ROLE_ADMINISTRATOR' => 'Administrator',
+            'ROLE_USER' => 'User',
+            'ROLE_CATALOG_MANAGER' => 'Catalog manager',
+        ];
+
         if (!$role) {
             $role = new Role($code);
+            $role->setOwner($this->mainOwner);
+            if (isset($labels[$code])) {
+                $role->setLabel($labels[$code]);
+            }
             $this->om->persist($role);
             $this->om->flush();
         }
@@ -148,5 +163,11 @@ class UserLoader extends LoadUserData
         }
 
         return $group;
+    }
+
+    protected function loadMainOwner()
+    {
+        $businessUnitManager = $this->container->get('oro_organization.business_unit_manager');
+        $this->mainOwner     = $businessUnitManager->getBusinessUnit(['name' => 'Main']);
     }
 }

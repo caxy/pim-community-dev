@@ -8,6 +8,7 @@ use Pim\Bundle\CatalogBundle\Model\AttributeInterface;
 use Pim\Bundle\CatalogBundle\Model\AttributeOptionInterface;
 use Pim\Bundle\CatalogBundle\Model\GroupTypeInterface;
 use Pim\Bundle\CatalogBundle\Model\ProductPriceInterface;
+use Pim\Bundle\CatalogBundle\Model\ProductValue;
 use Pim\Bundle\CommentBundle\Entity\Comment;
 use Pim\Bundle\CommentBundle\Model\CommentInterface;
 use Pim\Bundle\TransformBundle\Builder\FieldNameBuilder;
@@ -216,7 +217,8 @@ class FixturesContext extends RawMinkContext
      * @param string $entityName
      * @param mixed  $criteria
      *
-     * @return object|null
+     * @return null|object
+     * @throws \Exception
      */
     public function findEntity($entityName, $criteria)
     {
@@ -235,7 +237,7 @@ class FixturesContext extends RawMinkContext
      * @param string $entityName
      * @param mixed  $criteria
      *
-     * @throws InvalidArgumentException If entity is not found
+     * @throws \InvalidArgumentException If entity is not found
      *
      * @return object
      */
@@ -1304,6 +1306,7 @@ class FixturesContext extends RawMinkContext
      * @param array  $products
      *
      * @Then /^"([^"]*)" group should contain "([^"]*)"$/
+     * @throws \Exception
      */
     public function groupShouldContain($group, $products)
     {
@@ -1324,10 +1327,24 @@ class FixturesContext extends RawMinkContext
      * @param string $userGroupName
      *
      * @return \Oro\Bundle\UserBundle\Entity\Group
+     *
+     * @Then /^there should be a "([^"]+)" user group$/
      */
     public function getUserGroup($userGroupName)
     {
         return $this->getEntityOrException('UserGroup', ['name' => $userGroupName]);
+    }
+
+    /**
+     * @param string $userRoleName
+     *
+     * @return \Oro\Bundle\UserBundle\Entity\Role
+     *
+     * @Then /^there should be a "([^"]+)" user role$/
+     */
+    public function getUserRole($userRoleName)
+    {
+        return $this->getEntityOrException('Role', ['label' => $userRoleName]);
     }
 
     /**
@@ -1370,6 +1387,65 @@ class FixturesContext extends RawMinkContext
     public function getUser($username)
     {
         return $this->getEntityOrException('User', ['username' => $username]);
+    }
+
+    /**
+     * @param string $username
+     * @param string $groupname
+     *
+     * @return User
+     *
+     * @Then /^the user "([^"]+)" should be in the "(?P<groupname>[^"]+)" (group)$/
+     * @Then /^the user "([^"]+)" should have the "([^"]+)" (role)$/
+     */
+    public function checkUserAssociationExists($username, $searchedLabel = null, $associationType = null)
+    {
+        /** @var User $userEntity */
+        $userEntity = $this->getEntityOrException('User', ['username' => $username]);
+        if ($searchedLabel && $associationType == 'group' && !$userEntity->hasGroup($searchedLabel)) {
+            throw new \InvalidArgumentException("The user $username does not belong to the '$searchedLabel' group");
+        }
+        if ($searchedLabel && $associationType == 'role' && !$userEntity->hasRole($searchedLabel)) {
+            var_dump($searchedLabel);
+            throw new \InvalidArgumentException("The user $username does not have the '$searchedLabel' role");
+        }
+        return $userEntity;
+    }
+
+    /**
+     * @param string $username
+     * @param string $groupname
+     *
+     * @return User
+     *
+     * @Then /^the user "([^"]+)" should not be in the "(?P<groupname>[^"]+)" (group)$/
+     * @Then /^the user "([^"]+)" should not have the "([^"]+)" (role)$/
+     */
+    public function checkUserAssociationDoNotExist($username, $searchedLabel = null, $associationType = null)
+    {
+        return $this->checkUserAssociationExists($username, $searchedLabel, $associationType) ? false : true;
+    }
+
+    /**
+     * @param string $username
+     * @param string $groupname
+     *
+     * @return bool
+     *
+     * @Then /^the user "([^"]+)" should be in (\d+) (group)s?$/
+     * @Then /^the user "([^"]+)" should(?: still)? have (\d+) (role)s?$/
+     */
+    public function checkUserAssociationsCount($username, $count, $associationType)
+    {
+        /** @var User $userEntity */
+        $userEntity = $this->getEntityOrException('User', ['username' => $username]);
+        $check = false;
+        if ($associationType == 'group' && count($userEntity->getGroupNames()) == $count) {
+            $check = true;
+        } elseif ($associationType == 'role' && count($userEntity->getRoles()) == $count) {
+            $check = true;
+        }
+        return $check;
     }
 
     /**

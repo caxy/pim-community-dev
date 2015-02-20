@@ -312,6 +312,15 @@ class WebUser extends RawMinkContext
     }
 
     /**
+     * @Given /^I save and close$/
+     */
+    public function iSaveAndClose()
+    {
+        $this->getCurrentPage()->saveAndClose();
+        $this->wait();
+    }
+
+    /**
      * @param string  $attribute
      * @param integer $position
      *
